@@ -1,3 +1,5 @@
+import React from 'react';
+
 const Feedback = ({ textoOK, funcaoOK, textoNOK, funcaoNOK}) => {
   return (
     <div className="d-flex justify-content-evenly mt-2">
