@@ -1,109 +1,121 @@
-import React from 'react'
+import React from "react";
+import EstacaoClimatica from "./EstacaoClimatica";
+import Loading from "./Loading";
 
 class App extends React.Component {
+  // constructor(props){
+  //   super(props)
+  //   this.state = {
+  //     latitude: null,
+  //     longitude: null,
+  //     estacao: null,
+  //     data: null,
+  //     icone: null
+  //   }
+  //   console.log('constructor')
+  //}
 
-  constructor(props){
-    super(props)
-    this.state = {
-      latitude: null,
-      longitude: null,
-      estacao: null,
-      data: null,
-      icone: null
-    }
+  state = {
+    latitude: null,
+    longitude: null,
+    estacao: null,
+    data: null,
+    icone: null,
+    mensagemDeErro: null,
+  };
+
+  componentDidMount() {
+    console.log("componentDidMount");
+    this.obterLocalizacao();
+  }
+
+  componentDidUpdate() {
+    console.log("componentDidUpdate");
+  }
+
+  componentWillUnmount() {
+    console.log("componentWillUnmount");
   }
 
   obterEstacao = (data, latitude) => {
-    const anoAtual = data.getFullYear()
+    const anoAtual = data.getFullYear();
     //21/06 - contagem do mês começa do zero
-    const d1 = new Date(anoAtual, 5, 21)
+    const d1 = new Date(anoAtual, 5, 21);
     //24/09
-    const d2 = new Date(anoAtual, 8, 24)
+    const d2 = new Date(anoAtual, 8, 24);
     //22/12
-    const d3 = new Date(anoAtual, 11, 22)
+    const d3 = new Date(anoAtual, 11, 22);
     //21/03
-    const d4 = new Date(anoAtual, 2, 21)
-    const estaNoSul = latitude < 0 
-    if(data >= d1 && data < d2)
-      return estaNoSul ? 'Inverno' : 'Verão'
-    if(data >= d2 && data < d3)
-      return estaNoSul ? 'Primavera' : 'Outono'
-    if(data >= d3 || data < d1)
-      return estaNoSul ? 'Verão' : 'Inverno'
-    return estaNoSul ? 'Outono' : 'Primavera'
-  }
+    const d4 = new Date(anoAtual, 2, 21);
+    const estaNoSul = latitude < 0;
+    if (data >= d1 && data < d2) return estaNoSul ? "Inverno" : "Verão";
+    if (data >= d2 && data < d3) return estaNoSul ? "Primavera" : "Outono";
+    if (data >= d3 || data < d4) return estaNoSul ? "Verão" : "Inverno";
+    return estaNoSul ? "Outono" : "Primavera";
+  };
 
   icones = {
-    'Primavera': 'flower',
-    'Verão': 'sun',
-    'Outono': 'leaf',
-    'Inverno': 'snowflake'
-  }
-  
+    Primavera: "flower",
+    Verão: "sun",
+    Outono: "leaf",
+    Inverno: "snowflake",
+  };
+
   obterLocalizacao = () => {
     navigator.geolocation.getCurrentPosition(
-      position => {
-        const data = new Date()
-        const estacao = this.obterEstacao(data, position.coords.latitude)
-        const icone = this.icones[estacao]
+      (position) => {
+        const data = new Date();
+        const estacao = this.obterEstacao(data, position.coords.latitude);
+        const icone = this.icones[estacao];
         this.setState({
-          latitude: position.coords.latitude, 
+          latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           estacao: estacao,
           data: data.toLocaleTimeString(),
           icone: icone,
-        });      
-      }, 
-      erro => {
+        });
+      },
+      (erro) => {
         this.setState({
-          mensagemDeErro: 'Tente novamente mais tarde'
-        })        
+          mensagemDeErro: "Tente novamente mais tarde",
+        });
       }
     );
   };
-    
-  render(){ 
-    console.log(this.state)
-    console.log('render')
+
+  render() {
+    console.log("render");
     return (
       <div className="container mt-2">
         <div className="row justify-content-center">
           <div className="col-sm-12 col-md-8 col-xxl-6">
-            <div className="card">
-              <div className="card-body">
-                <div 
-                  className="d-flex align-items-center border rounded mb-2 p-3"
-                  style={{height: '10rem'}}>
-                    <i className={`fas fa-5x fa-${this.state.icone}`}></i>
-                    <p className="w-75 ms-3 text-center fs-1">
-                      {this.state.estacao}
-                    </p>
-                </div>
-                  <p className="text-center">
-                  {
-                    this.state.latitude ?
-                      `Coordenadas: ${this.state.latitude}, 
-                      ${this.state.longitude}. Data: ${this.state.data}.`
-                    :
-                    this.state.mensagemDeErro ?
-                      `${this.state.mensagemDeErro}`
-                    :  
-                    'Clique no botão para saber a sua estação climática'
-                  }
+            <div className="d-flex align-items-center vh-100">
+          {
+            (!this.state.latitude && !this.state.mensagemDeErro) ?
+              <Loading 
+                mensagem="Por favor, responda à 
+                solicitação de localização..."/>
+            :
+              this.state.mensagemDeErro ?
+                <p className="border rounded p-2 fs-1 text-center w-100">
+                  É preciso permitir o acesso para mostrar a estação climática!
                 </p>
-
-                <button 
-                onClick={this.obterLocalizacao}
-                className="btn btn-outline-primary w-100 mt-2">
-                  Qual a minha estação?
-                </button>
-              </div>
-            </div>
+              :
+                <EstacaoClimatica 
+                  icone={this.state.icone}
+                  estacao={this.state.estacao}
+                  latitude={this.state.longitude}
+                  longitude={this.state.longitude}
+                  data={this.state.data}
+                  mensagemDeErro={this.state.mensagemDeErro}
+                  obterLocalizacao={this.obterLocalizacao}/>    
+          }
           </div>
         </div>
       </div>
-    )
+    </div>
+    );
   }
 }
 
-export default App
+export default App;
